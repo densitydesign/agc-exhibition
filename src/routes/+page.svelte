@@ -1,468 +1,380 @@
 <script lang="ts">
+	import { language } from '$lib/stores';
 	import { onMount } from 'svelte';
-	import { addToCalendar } from '$lib/utils';
 
-	let images_a = Array.from(
-		{ length: 10 },
-		(_, index) => `https://picsum.photos/400?random=${Math.floor(Math.random() * 1000)}`
-	);
+	import Section from '$lib/components/Section.svelte';
+	import LandingPage from '$lib/components/LandingPage.svelte';
+	import Paragraph from '$lib/components/Paragraph.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import Parallax from '$lib/components/Parallax.svelte';
 
-	let images_b = Array.from(
-		{ length: 10 },
-		(_, index) => `https://picsum.photos/400?random=${Math.floor(Math.random() * 1000)}`
-	);
+	//@ts-ignore
+	import Stripe from '$lib/assets/stripe.svg?component';
+	//@ts-ignore
+	import Grid from '$lib/assets/grid.svg?component';
+	//@ts-ignore
+	import Dot from '$lib/assets/dot.svg?component';
 
-	let isSticky = false;
-	let stickyThreshold = 0; 
+	import Sopra1 from '$lib/assets/map/SOPRA1.svg?component';
+	import Sopra2 from '$lib/assets/map/SOPRA2.svg?component';
+	import Sopra3 from '$lib/assets/map/SOPRA3.svg?component';
+	import Sopra4 from '$lib/assets/map/SOPRA4.svg?component';
+	import Sotto1 from '$lib/assets/map/SOTTO1.svg?component';
+	import Sotto2 from '$lib/assets/map/SOTTO2.svg?component';
 
-	let scrollY = 0;
-	
+
+
+	let mainElement: HTMLElement;
+	let innerWidth: number = 0;
+	let innerHeight: number = 0;
+	let mobile: boolean = false;
+	let scrollY: number = 0;
+
+	let mouseX: number = 0;
+	let mouseY: number = 0;
+
+	let dx: number = 0;
+	let dy: number = 0;
+
+
 	onMount(() => {
-		const navElement = document.querySelector('nav');
-		stickyThreshold = navElement ? navElement.offsetTop - 12 : 0;
-	
+
+
 		const handleScroll = () => {
-			scrollY = window.scrollY;
+			scrollY = mainElement.scrollTop; // Use `scrollTop` to get the scroll position
 		};
 
-		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
+		mainElement.addEventListener('scroll', handleScroll);
+
+		return () => {
+			mainElement.removeEventListener('scroll', handleScroll);
+		};
 	});
 
-	let isDragging = false;
-    let startDragX = 0;
-    let dragOffsetTopRow = 0;
-    let dragOffsetBottomRow = 0;
-
-    function onMouseDown(event: MouseEvent) {
-        isDragging = true;
-        startDragX = event.clientX;
-        event.preventDefault(); // Prevents unwanted text selection during drag
-    }
-
-    function onMouseMove(event: MouseEvent) {
-        if (!isDragging) return;
-		if (!event.currentTarget) return;
-
-        const deltaX = event.clientX - startDragX;
-        startDragX = event.clientX;
-        
-if ((event.currentTarget as HTMLElement).classList.contains('top-row')) {
-            dragOffsetTopRow += deltaX;
-        } else {
-            dragOffsetBottomRow += deltaX;
-        }
-    }
-
-    function onMouseUp() {
-        isDragging = false;
-    }
-
-    $: moveTopRow = Math.max(scrollY * 0.2, 100) + dragOffsetTopRow;
-    $: moveBottomRow = Math.min(scrollY * -0.2, -100) + dragOffsetBottomRow;
-	$: isSticky = scrollY > stickyThreshold;
+	$: {
+		mobile = innerWidth < 768;
+		dx = (mouseX / innerWidth) - 0.5; 
+		dy = (mouseY / innerHeight) - 0.5;
+	}
 </script>
 
-<!-- Landing -->
-<section class="layout-cols landing-section" aria-labelledby="landing-section-header">
-	<header class="hero box" id="landing-section-header">
-		<!--<h1>Api, Glicini, Cemento</h1>-->
-		<img src="./Hero.svg" >
-	</header>
+//captur gyrosocope on mobile 
 
-	<a class="location box grid-background" href="https://maps.app.goo.gl/VXG84vEynJeSvRuJ8" target="_blank">
-		<article aria-labelledby="event-location-header">
-			<h2 id="event-location-header">MEET Digital Culture Center</h2>
-			<address>Via Vittorio Veneto 2, MILANO</address>
-		</article>
-	</a>
 
-	<button class="start-date box striped-background" aria-label="Apertura della mostra" on:click={addToCalendar}>
-		<time datetime="2023-02-22">22 FEB</time>
-	</button>
+<svelte:window bind:innerWidth bind:innerHeight bind:scrollY/>
 
-	<button class="end-date box" aria-label="Chiusura della mostra" on:click={addToCalendar}>
-		<time datetime="2023-03-10">10 MAR</time>
-	</button>
-
-	<nav aria-label="Primary" class:sticky={isSticky && (window.innerWidth < 500)}>
-		<ul>
-			<li>
-				<a class="box" href="/progetti" aria-label="Vai ai progetti"> Projects </a>
-			</li>
-			<li>
-				<a class="box" href="#about" aria-label="Vai all'About"> About </a>
-			</li>
-		</ul>
-	</nav>
-
-	<figure class="image spotlight" aria-labelledby="spotlight-image-caption">
-		<img src="https://picsum.photos/300" alt="Spotlight Image Description" />
-		<figcaption class="visually-hidden" id="spotlight-image-caption">Spotlight</figcaption>
-	</figure>
-	<figure class="image catalogue" aria-labelledby="catalogue-image-caption">
-		<img src="https://picsum.photos/500" alt="Catalogue Image Description" />
-		<figcaption class="visually-hidden" id="catalogue-image-caption">Catalogue</figcaption>
-	</figure>
-	<figure class="image meet" aria-labelledby="meet-image-caption">
-		<img src="https://picsum.photos/200" alt="Meet Image Description" />
-		<figcaption class="visually-hidden" id="meet-image-caption">Meet</figcaption>
-	</figure>
-</section>
-
-<!-- About-->
-<section id="#about" class="layout-cols about-section" aria-labelledby="about-header">
-	<main>
-		<header class="about-header" id="about-header">
-			<h1>Otto dibattiti sulla biodiversità urbana visti attraverso il web</h1>
-		</header>
-		<div class="about-body">
-			<p>
-				È facile incappare in discussioni molto accese quando si parla di biodiversità in termini di
-				azioni che andrebbero intraprese su scala nazionale ed internazionale, delle loro
-				potenzialità e rischi. Ma cosa succede quando invece le discussioni sono locali e riguardano
-				politiche molto concrete che colpiscono un'area e un gruppo di persone abbastanza ristretto?
-			</p>
-			<p>
-				In questa mostra sono stati identificati otto dibattiti iper-locali creati sia da politiche
-				volte a salvaguardare la biodiversità, sia da interventi urbanistici che mettono in
-				discussione la relazione tra la necessità di una città di cambiare e quella di salvaguardare
-				sistemi ecologici.
-			</p>
-			<p>
-				Il web è stato utilizzato come una lente che ci permette di vedere le dinamiche di una
-				porzione del dibattito, identificando per ognuno un approccio differente: dall’analisi dei
-				video YouTube più visti su un tema alle immagini utilizzate da testate online per parlarne,
-				dai commenti su Facebook alle trascrizioni degli incontri municipali.
-			</p>
-			<p>
-				Abbiamo chiesto a degli studenti in Design della Comunicazione di raccogliere e
-				reinterpretare i brandelli più rilevanti di questi dibattiti sotto forma di installazioni,
-				per fornire una visione d’insieme su ogni tematica: chi sono gli attori coinvolti? Con quali
-				affermazioni promuovono la loro posizione? Come collegano e interpretano il concetto di
-				'biodiversità' a queste tematiche locali?
-			</p>
-			<p>
-				Le installazioni non hanno l'intenzione di fornire una visione definitiva del dibattito, né
-				di sostenere o sminuire gli attori coinvolti. Esse restituiscono la forma del dibattito, in
-				cui, come spesso accade, le posizioni più vocali non sono necessariamente maggioritarie e
-				talvolta sfociano in comportamenti non condivisibili né difendibili. Tuttavia, questi
-				artefatti rimangono delle istantanee che ci consentono di riflettere su come il tema della
-				biodiversità incida sempre più praticamente sulle nostre vite, su come le ormai
-				imprescindibili piattaforme digitali mediano queste discussioni e su come gli approcci
-				identificati possano essere espansi, rivisti o applicati ad altri casi.
-			</p>
-		</div>
-	</main>
-
-	<div class="divider" aria-hidden="true">
-		<div class="divider-grid">
-			<div class="divider-row top-row" on:mousedown={event => onMouseDown(event)} on:mousemove={onMouseMove} on:mouseup={onMouseUp} style="transform: translateX({moveTopRow}px);">
-				{#each images_a as image}
-					<img src={image} alt="Random image from Picsum" />
-				{/each}
-			</div>
-			<div class="divider-row bottom-row" on:mousedown={event => onMouseDown(event)} on:mousemove={onMouseMove} on:mouseup={onMouseUp} style="transform: translateX({moveBottomRow}px);">
-				{#each images_b as image}
-					<img src={image} alt="Random image from Picsum" />
-				{/each}
-			</div>
-		</div>
+<main bind:this={mainElement} on:mousemove={(e) => { mouseX = e.clientX; mouseY = e.clientY; console.log(dx) }}>
+	<Navbar />
+	<div class="map higher" style="transform: translate3d({35*dx}px, {(-scrollY * 1.25) + (35*dy)}px, 0)">
+		<Sopra1 />
+	</div>
+	<div class="map higher" style="transform: translate3d({30*dx}px, {(-scrollY * 1.28) + (30*dy)}px, 0)">
+		<Sopra2 />
+	</div>
+	<div class="map higher" style="transform: translate3d({25*dx}px, {(-scrollY * 1.3) + (25*dy)}px, 0)">
+		<Sopra3 />
+	</div>
+	<div class="map higher" style="transform: translate3d({20*dx}px, {(-scrollY * 1.4) + (20*dy)}px, 0)">
+		<Sopra4 />
 	</div>
 
-	<div class="partner-info">
-		<article class="density" aria-labelledby="density-design-header">
-			<div class="partner-logo density"></div>
-			<div class="partner-description" id="density-design-header">
-				<h1>DensityDesign Research Lab</h1>
-				<p>
-					DensityDesign è una rosticceria cinese fondata nel 2004 da 保罗·丘卡雷利, specializzata in
-					delizie culinarie con un pizzico di data visualization. Tra i piatti più richiesti, gli
-					'Spaghetti à la Sankey', famosi per il loro intricato intreccio di sapori. Non manca il
-					'Dato da Brodo', un ingrediente segreto usato per insaporire zuppe con statistiche
-					sorprendenti. Il Bubble Chart Boba Tea è un must per gli amanti dei grafici e delle bolle,
-					perfetto per sorseggiare dati rinfrescanti. Inoltre, il 'Pie Chart Pizza', con fette
-					proporzionali alle preferenze dei clienti, e le 'Histogram Honey Ribs', dove ogni osso
-					rappresenta un'unità di delizia, sono irresistibili. Da DensityDesign, ogni piatto è
-					un'avventura visiva, dove i dati sono serviti con gusto e creatività."
-				</p>
-			</div>
-		</article>
+	<LandingPage />
 
-		<article class="nbfc" aria-labelledby="nbfc-header">
-			<div class="partner-logo"></div>
-			<div class="partner-description" id="nbfc-header">
-				<h1>National Biodiversity Future Centre</h1>
-				<p>
-					Il Centro Nazionale per la Biodiversità, in collaborazione con il Consiglio Nazionale
-					delle Ricerche, si dedica alla ricerca e conservazione della biodiversità in Italia e nel
-					Mediterraneo. Sostenuto dall'Unione Europea e dal Piano nazionale di ripresa e resilienza,
-					il Centro unisce sforzi di vari partner per promuovere la salvaguardia degli ecosistemi,
-					giocando un ruolo cruciale nel raggiungimento degli obiettivi di sviluppo sostenibile
-					globale
-				</p>
-			</div>
-		</article>
+	<div class="map lower" style="transform: translate3d({10*dx}px, {(-scrollY * 1.05) + (10*dy)}px, 0)">
+		<Sotto2 />
 	</div>
-</section>
+	<div class="map lower" style="transform: translate3d({5*dx}px, {(-scrollY * 1.1) + (5*dy)}px, 0)">
+		<Sotto1 />
+	</div>
+
+	<Section>
+		<Paragraph start={2} span={7}>
+			{#if $language === 'IT'}
+				In un mondo sempre più urbanizzato, la promozione della biodiversità urbana attraverso
+				politiche dedicate è diventata una necessità. In questo senso, le città mettono in atto
+				iniziative a diverse scale: giardini condivisi, grandi progetti di riforestazione urbana,
+				parchi urbani, tetti e pareti verdi. Tuttavia, questo non è un processo senza attriti: cosa
+				succede quando queste politiche colpiscono un'area e un gruppo di persone abbastanza
+				ristretto?
+			{:else}
+				Promoting urban biodiversity through dedicated policies has become crucial in an
+				increasingly urbanized world. In this regard, cities implement initiatives at various
+				scales: shared gardens, large urban reforestation projects, urban parks, green roofs, and
+				walls. However, promoting nature in cities is not a frictionless process: what happens when
+				these policies affect a relatively small area and group of people?
+			{/if}
+		</Paragraph>
+	</Section>
+	<Section>
+		<Parallax start={2} span={1} pos={scrollY * -0.1} mobile={mobile}>
+			<Stripe />
+		</Parallax>
+		<Paragraph start={2} span={6}>
+			{#if $language === 'IT'}
+				La mostra esplora otto dibattiti iper-locali creati sia da politiche volte a salvaguardare
+				la biodiversità, sia da interventi urbanistici che mettono in discussione la relazione tra
+				la necessità di una città di cambiare e quella di preservare sistemi ecologici.
+			{:else}
+				The exhibition explores eight hyper-local debates generated by policies aimed at
+				safeguarding biodiversity and urban interventions that question the relationship between a
+				city's need to change and preserve ecological systems.
+			{/if}
+		</Paragraph>
+		<Parallax start={3} span={2} pos={scrollY * -0.4} mobile={mobile}>
+			<Dot />
+		</Parallax>
+	</Section>
+	<Section>
+		<Parallax start={4} span={2} pos={scrollY * -0.1} mobile={mobile}>
+			<Grid />
+		</Parallax>
+		<Paragraph start={5} span={6}>
+			{#if $language === 'IT'}
+				Il web è stato utilizzato come una lente che permette di esplorare le dinamiche di una
+				porzione del dibattito, identificando per ognuno un approccio differente: dai video YouTube
+				più visti alle immagini utilizzate dalle testate online, dai commenti su Facebook alle
+				trascrizioni degli incontri municipali.
+			{:else}
+				These dynamics have been explored through the web: from the most viewed YouTube videos to
+				the images used by online news sources, from Facebook comments to transcripts of municipal
+				meetings.
+			{/if}
+		</Paragraph>
+		<Parallax start={8} span={3} pos={scrollY * -0.65} mobile={mobile}>
+			<Stripe />
+		</Parallax>
+	</Section>
+	<Section>
+		<Paragraph start={3} span={7}>
+			{#if $language === 'IT'}
+				La mostra, promossa dal <a href="https://www.nbfc.it" target="_blank"
+					>National Biodiversity Future Center</a
+				>, è parte di una ricerca condotta presso il Politecnico di Milano, in cui sono stati
+				coinvolti più di 50 studenti del corso di
+				<a href="https://www.designdellacomunicazione.polimi.it" target="_blank"
+					>Design della Comunicazione presso il Politecnico di Milano</a
+				>, coordinati da <a href="https://densitydesign.org/" target="_blank">DensityDesign Lab</a>.
+				Gli studenti hanno reinterpretato i frammenti più rilevanti di questi dibattiti sotto forma
+				di installazioni. Il fine è quello di fornire una visione d'insieme su ogni tematica: chi
+				sono gli attori coinvolti? Con quali affermazioni promuovono la loro posizione? Come
+				collegano e interpretano il concetto di 'biodiversità' a queste tematiche locali?
+			{:else}
+				The exhibition, promoted by the <a href="https://www.nbfc.it/en" target="_blank"
+					>National Biodiversity Future Center
+				</a>
+				, is part of a research conducted at Politecnico di Milano, involving more than 50 students from
+				the
+				<a href="https://www.designdellacomunicazione.polimi.it/en" target="_blank">
+					Communication Design course
+				</a>
+				coordinated by <a href="https://densitydesign.org/" target="_blank">DensityDesign Lab</a>.
+				The students reinterpreted the most relevant fragments of these debates in the form of
+				installations. The goal is to provide an overview of each issue: who are the actors
+				involved? What statements do they use to promote their positions? How do they connect and
+				interpret the concept of biodiversity to these local issues?
+			{/if}
+		</Paragraph>
+	</Section>
+	<Section>
+		<Paragraph start={2} span={6}>
+			{#if $language === 'IT'}
+				Le installazioni raccontano la porzione del dibattito visibile attraverso il web. Ne
+				emergono delle narrazioni frammentate e talvolta contraddittorie, che ci consentono però di
+				riflettere su come il tema della biodiversità incida sempre più sulle nostre vite e su come
+				le ormai imprescindibili piattaforme digitali medino queste discussioni.
+			{:else}
+				The installations narrate the portion of the debate visible through the web. Fragmented and
+				occasionally contradictory narratives emerge, allowing to reflect on how the issue of
+				biodiversity increasingly affects our lives and how digital platforms mediate these
+				discussions.
+			{/if}
+		</Paragraph>
+	</Section>
+	<Section>
+		<h2 class="title faculty credits">
+			{#if $language === 'IT'}
+				Corpo Docente
+			{:else}
+				Faculty
+			{/if}
+		</h2>
+
+		<p class="body faculty credits">
+			Michele Mauri, Gabriele Colombo, Ángeles Briones, Salvatore Zingale, Elena Aversa, Arianna
+			Bellantuono, Andrea Benedetti, Luca Draisci, Alessandra Facchin, Beatrice Gobbo
+		</p>
+
+		<h2 class="title nbfc credits">
+			{#if $language === 'IT'}
+				Coordinatori National Biodiversity Future Center
+			{:else}
+				National Biodiversity Future Center Coordinators
+			{/if}
+		</h2>
+		<p class="body nbfc credits">
+			<span> Massimo Labra (Università degli Studi di Milano-Bicocca) </span>
+			<br />
+			<span> Maria Chiara Pastore (Politecnico di Milano) </span>
+		</p>
+	</Section>
+	<Section>
+		<div id="authors">
+			<h2 class="credits title" style="margin-bottom: 16px;">
+				{#if $language === 'IT'}
+					Autori
+				{:else}
+					Authors
+				{/if}
+			</h2>
+			<p class="credits">
+				Andrea Burchiani, Benedetta Riccio, Bianca Bauer, Bingru He, Carla D’Antonio, Carmen
+				Framiñán, Carolina Giacomin Da Silva, Claire Capone, Corbani Federico, Daniela Muñoz, David
+				Hazan, De Nicolò Alessio, Diego Valdivieso, Elisabetta Como, Filippo Roveda, Francesca
+				Mattiacci, Giada Fugazzola, Giulia Costanzo, Hanya Nie, Havrylova Kseniia, Huajie Zhang,
+				Javiera de la Maza, Jovana Tesic, Kalita Sudipta Sagar, Luca Bottani, Luiz Carlos De Souza
+				Junior, Maciukiewicz Helena, Maher Fatemeh, Malena Paz, Martina Balducci, Michela Chignoli,
+				Mo Beini, Mona Abolghasemi, Nicolás Raigoso, Nima Ahmadi, Noemi Capparelli, Oasis Mignot,
+				Paola Pia Palumbo, Qin Wang, Riccardo Fregnan, Riccardo Ventura, Samuele Anzelotti, Sara
+				Matilda Montorio, Shegnan Zou, Shuo Lou, Shuyu Zhang, Sofia Bonfanti, Thais De Castro Lima,
+				Tommaso Prinetti, Trabattoni Marco, Vanessa Medda, Yasemin Umac, YiYou Zou, Yuhan Zhu,
+				Zaiarniuk Anastasiia, Zhegnan Liu, Ziqi Huang
+			</p>
+		</div>
+		<Footer />
+	</Section>
+</main>
 
 <style>
-	.image {
-		overflow: clip;
+	@import url('https://fonts.cdnfonts.com/css/switzer');
+
+	main {
+		font-family: 'Switzer', sans-serif;
+		scroll-behavior: smooth;
+		/*scroll-snap-type: y mandatory;*/
+		overflow-y: scroll;
+		height: 100vh;
+		max-height: 100vh;
+		max-width: 100%;
 	}
 
-	img {
-		margin: 0;
+	.map {
+		opacity: 0.8;
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
+		height: 100vh;
+		overflow: hidden;
 		pointer-events: none;
 	}
 
-	.hero,
-	.location,
-	.start-date,
-	.end-date,
-	.image {
-		color: white;
-		background-color: black;
+	:global(.map > svg) {
+		transform: translate(0, -25%);
 	}
 
-	.layout-cols {
-		width: 100%;
-		display: grid;
-		grid-template-columns: repeat(12, minmax(0, 72px));
-		grid-gap: 24px;
-		align-content: center;
-		justify-content: center;
-		padding: 24px;
-		box-sizing: border-box;
+	.map.lower {
+		z-index: -1;
 	}
 
-	.landing-section {
-		grid-template-rows: repeat(8, minmax(0, 72px));
-		height: 100vh;
+	.map.higher {
+		z-index: 99;
 	}
 
-	.box {
-		padding: 12px;
-		box-sizing: border-box;
-		border: none;
+	.body {
+		grid-row: 3;
+		align-self: start;
 	}
 
-	.hero {
-		grid-column: 1 / span 8;
-		grid-row: 1 / span 3;
+	.faculty {
+		grid-column: 2 / span 5;
 	}
 
-	.location {
-		grid-column: 1 / span 6;
-		grid-row: 5 / span 2;
+	.nbfc {
+		grid-column: 7 / span 5;
 	}
 
-	.start-date {
-		grid-column: 1 / span 3;
-		grid-row: 7 / span 2;
-	}
-
-	.end-date {
-		grid-column: 4 / span 3;
-		grid-row: 7 / span 2;
-	}
-
-	nav {
-		grid-column: 10 / span 3;
-		grid-row: 7 / span 2;
-	}
-
-	nav > ul {
-		padding: 0;
+	.credits {
+		font-size: 32px;
+		line-height: 48px;
 		margin: 0;
-		display: grid;
-		grid-gap: 24px;
-		grid-template-columns: 1fr;
-		grid-template-rows: 1fr 1fr;
-		height: 100%;
+		font-weight: 200;
 	}
 
-	nav > ul > li {
-		list-style: none;
-		width: 100%;
-		height: 100%;
-	}
-
-	nav > ul > li > a {
-		display: block;
-		height: 100%;
-		width: 100%;
-		color: white;
-		background-color: black;
-		text-decoration: none;
-	}
-
-	.spotlight {
-		grid-column: 9 / span 4;
-		grid-row: 1 / span 3;
-	}
-
-	.catalogue {
-		grid-column: 7 / span 6;
-		grid-row: 4 / span 3;
-	}
-
-	.meet {
-		grid-column: 7 / span 3;
-		grid-row: 7 / span 2;
-	}
-
-	.sticky {
-		box-sizing: border-box;
-		width: 100%; 
-		left: 0; 
-		padding: 12px; 
-        position: fixed;
-        top: 0px; 
-        z-index: 1000;
-		height: 32px;
-    }
-
-	/* * * * * * * * * * * * * * * * * ABOUT * * * * * * * * * * * * * * * * */
-
-	main {
-		margin: calc(24px + 72px) 0; /*as if there was an empty grid row*/
-		grid-column: 1 / span 9;
-	}
-
-	.divider {
+	.title {
+		font-weight: 500;
 		grid-row: 2;
-		grid-column: 1 / span 12;
-		display: grid;
-		align-content: center;
-		justify-content: center;
 	}
 
-	.divider-grid {
-		display: grid;
-		align-content: center;
-		justify-content: center;
-		grid-template-rows: repeat(2, max(152px));
-		grid-gap: 24px;
+	#authors {
+		grid-column: 2 / span 10;
+		text-align: center;
+		margin: auto 0;
 	}
 
-	.divider-row {
-		width: max-content;
-		display: grid;
-		grid-template-columns: repeat(10, auto);
-		grid-template-rows: 1fr;
-		grid-gap: 24px;
-		overflow: hidden;
-		transition: transform 0.3s ease-out; 
+	:global(section:nth-last-child(2) > .grid-container) {
+		grid-template-rows: auto min-content min-content auto;
+		grid-gap: 48px;
 	}
 
-	.partner-info {
-		margin: calc(24px + 72px) 0; /*as if there was an empty grid row*/
-		grid-column: 1 / span 12;
+	:global(section:last-child > .grid-container) {
+		grid-template-rows: auto min-content;
+		padding-top: 64px;
 	}
 
-	.partner-info > article {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		grid-gap: 24px;
-	}
-
-	@media (max-width: 1024px) {
-		.divider-grid {
-			grid-template-rows: repeat(2, max(120px));
+	@media (max-width: 768px) {
+		.credits {
+			font-size: 24px;
+			line-height: 30px;
+			text-align: center;
 		}
+
+		#authors > .credits {
+			font-size: 18px;
+			line-height: 22px;
+		}
+
+		#authors > h2.credits {
+		font-size: 24px;
+		line-height: 30px;
 	}
 
-	@media (max-width: 500px) {
-		.layout-cols {
-			grid-template-columns: repeat(6, minmax(0, 1fr));
+		.title.faculty {
+			grid-column: 1 / 2;
+			grid-row: 2;
+		}
+
+		.body.faculty {
+			grid-column: 1;
+			grid-row: 3;
+		}
+
+		.title.nbfc {
+			grid-column: 1;
+			grid-row: 5;
+		}
+
+		.body.nbfc {
+			grid-column: 1;
+			grid-row: 6;
+		}
+
+		:global(section:nth-last-child(2) > .grid-container) {
+			display: grid;
+			grid-template-columns: 1fr;
+			grid-template-rows: 1fr min-content min-content 12vh min-content min-content 1fr;
 			grid-gap: 12px;
-			padding: 12px;
+			justify-content: center;
+			align-items: center;
 		}
 
-		.landing-section {
-			grid-template-rows: repeat(17, minmax(0, 32px));
-			/*position: sticky;
-			top: calc(-100vh + 72px);*/
+		:global(section:last-child > .grid-container) {
+			padding-top: 64px;
 		}
 
-		.hero {
-			grid-column: 1 / span 6;
-			grid-row: 1 / span 8;
-		}
-
-		.location {
-			grid-column: 1 / span 6;
-			grid-row: 9 / span 3;
-		}
-
-		.meet {
-			grid-column: 1 / span 2;
-			grid-row: 12 / span 2;
-		}
-
-		.start-date {
-			grid-column: 3 / span 2;
-			grid-row: 12 / span 3;
-		}
-
-		.end-date {
-			grid-column: 5 / span 2;
-			grid-row: 12 / span 3;
-		}
-
-		nav {
-			height: 100%;
-			width: 100%;
-			grid-column: 1 / span 6;
-			grid-row: 16 / span 1;
-			/*position: sticky;
-			top: 12px;*/
-		}
-
-		nav > ul {
-			height: 100%;
-			grid-gap: 12px;
-			grid-template-columns: repeat(6, minmax(0, 1fr));
-			grid-template-rows: 1fr;
-		}
-
-		nav > ul > li:nth-child(1) {
-			grid-column: 2 / span 2;
-			grid-row: 1 / span 1;
-		}
-
-		nav > ul > li:nth-child(2) {
-			grid-column: 4 / span 2;
-			grid-row: 1 / span 1;
-		}
-
-		.catalogue,
-		.spotlight {
-			display: none;
-		}
-
-		.divider-grid,
-		.divider-row {
-			grid-gap: 12px;
-			transition: transform 0.3s ease-out;
+		:global(.map > svg) {
+			transform: translate(0, 15%) scale(1.5);
 		}
 	}
-
-	.grid-background {
-  background-image: linear-gradient(gray 1px, transparent 1px), linear-gradient(90deg, gray 1px, transparent 1px);
-  background-size: 10px 10px; 
-}
-
-.striped-background {
-  background-image: repeating-linear-gradient(
-    60deg,
-    gray,
-    gray 1px,
-    transparent 1px,
-    transparent 3px
-  );
-}
-
 </style>
