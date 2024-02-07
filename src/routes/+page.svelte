@@ -42,7 +42,7 @@
 
 
 		const handleScroll = () => {
-			scrollY = mainElement.scrollTop; // Use `scrollTop` to get the scroll position
+			scrollY = mainElement.scrollTop;
 		};
 
 		mainElement.addEventListener('scroll', handleScroll);
@@ -58,9 +58,6 @@
 		dy = (mouseY / innerHeight) - 0.5;
 	}
 </script>
-
-//captur gyrosocope on mobile 
-
 
 <svelte:window bind:innerWidth bind:innerHeight bind:scrollY/>
 
